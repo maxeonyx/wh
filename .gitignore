@@ -1,0 +1,9 @@
+.toolchain/
+engine/build/
+dist/*
+!dist/.gitkeep
+*.user
+*.suo
+*.pdb
+third_party/open-whispr/
+third_party/whisper.cpp/
