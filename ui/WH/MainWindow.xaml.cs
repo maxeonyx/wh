@@ -3,7 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 
-namespace WH;
+namespace wh;
 
 public partial class MainWindow : Window
 {
@@ -44,7 +44,7 @@ public partial class MainWindow : Window
 
     private void OnRecordClick(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show("Record pressed — wiring arrives in M2.", "WH");
+        MessageBox.Show("Record pressed — wiring arrives in M2.", "wh");
     }
 }
 

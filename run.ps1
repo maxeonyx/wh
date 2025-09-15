@@ -15,7 +15,7 @@ if (-not $Arch) {
     }
 }
 $RID = if ($Arch -eq 'arm64') { 'win-arm64' } else { 'win-x64' }
-$exe = Join-Path $RepoRoot "ui/WH/publish/$RID/WH.exe"
+$exe = Join-Path $RepoRoot "ui/wh/publish/$RID/wh.exe"
 if (-not (Test-Path $exe)) {
     Write-Host "Executable not found at $exe. Building…" -ForegroundColor Yellow
     & $RepoRoot\build.ps1 -Arch $Arch | Out-Null

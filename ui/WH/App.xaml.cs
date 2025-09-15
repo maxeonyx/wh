@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace WH;
+namespace wh;
 
 public partial class App : Application
 {

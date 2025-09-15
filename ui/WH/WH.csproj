@@ -5,8 +5,8 @@
     <OutputType>WinExe</OutputType>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>WH</AssemblyName>
-    <RootNamespace>WH</RootNamespace>
+    <AssemblyName>wh</AssemblyName>
+    <RootNamespace>wh</RootNamespace>
     <!-- Single-file publish. RID passed via build script. -->
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>

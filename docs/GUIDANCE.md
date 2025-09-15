@@ -7,10 +7,10 @@
 - Maintain directories:
   - `/ui` — WPF app (Windows 11 styling, dark mode, blue Record button).
   - `/native` — Native library used by the UI for Whisper integration.
-  - `/docs` — `README.md`, `AGENTS.md`, `VISION.md`, plus any additional design notes.
-- `AGENTS.md`: **AI-oriented** documentation entrypoint. Contains build/run/test instructions, short project overview, and instructions for how to interact with the developer.
-- `README.md`: Human entry point. Project elevator pitch, installation instructions, notes on latest version.
-- `
+  - `/docs` — `VISION.md` and ongoing design notes.
+- Top-level docs at repo root: `README.md` and `AGENTS.md`.
+- App name is lowercase `wh` across code, scripts, and docs.
+
 
 ## Bootstrapping & Tooling
 

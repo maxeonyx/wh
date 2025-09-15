@@ -64,12 +64,12 @@ if (-not (Test-Path $nativeDll)) { throw "Native build failed: $nativeDll missin
 Write-Info "Native built: $nativeDll"
 
 # Build UI single-file
-$proj = Join-Path $RepoRoot 'ui/WH/WH.csproj'
-$pubDir = Join-Path $RepoRoot "ui/WH/publish/$RID"
+$proj = Join-Path $RepoRoot 'ui/wh/wh.csproj'
+$pubDir = Join-Path $RepoRoot "ui/wh/publish/$RID"
 dotnet restore $proj | Write-Host
 dotnet publish $proj -c $Configuration -r $RID -p:PublishSingleFile=true -p:SelfContained=true -p:IncludeNativeLibrariesForSelfExtract=true -o $pubDir | Write-Host
 
-$exe = Join-Path $pubDir 'WH.exe'
+$exe = Join-Path $pubDir 'wh.exe'
 if (-not (Test-Path $exe)) { throw "Publish failed: $exe not found" }
 Write-Info "Published single-file: $exe"
 Write-Output $exe
