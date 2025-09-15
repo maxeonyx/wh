@@ -5,30 +5,34 @@ on:
   pull_request:
 
 jobs:
-  build:
+  build-test:
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest, windows-arm64]
         compiler: [msvc, mingw]
-    runs-on: ${{ matrix.os }}
+    env:
+      WH_MODELS_DIR: ${{ runner.temp }}\wh_models
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Bootstrap toolchain
         shell: pwsh
-        run: |
-          ./bootstrap.ps1
+        run: ./bootstrap.ps1
 
-      - name: Build (${{ matrix.compiler }})
-        shell: pwsh
-        run: |
-          $arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'arm64' } else { 'x64' }
-          ./build.ps1 -Compiler ${{ matrix.compiler }} -Arch $arch -Configuration Release
+      - name: Restore model cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.WH_MODELS_DIR }}
+          key: wh-models-ggml-tiny-en-v1
 
-      - name: Test
+      - name: Build
         shell: pwsh
-        run: |
-          ./test.ps1
+        run: ./build.ps1 -Compiler ${{ matrix.compiler }}
+
+      - name: E2E UI test
+        shell: pwsh
+        run: ./test.ps1 -TimeoutSeconds 120
 

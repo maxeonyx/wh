@@ -1,4 +1,4 @@
-Param(
+﻿Param(
     [switch]$Quiet
 )
 
@@ -44,7 +44,7 @@ function Ensure-GitPortable {
     }
     $gitDir = Join-Path $Toolchain 'PortableGit'
     if (-not (Test-Path $gitDir)) {
-        Write-Info "Fetching Git for Windows release assets…"
+        Write-Info "Fetching Git for Windows release assets"
         $rel = Invoke-RestMethod -Uri 'https://api.github.com/repos/git-for-windows/git/releases/tags/v2.51.0.windows.1'
         $arch = if ((Get-Arch) -eq 'arm64') { 'arm64' } else { '64-bit' }
         # Prefer MinGit zip for easy extraction
@@ -53,9 +53,9 @@ function Ensure-GitPortable {
             throw 'MinGit zip asset not found in release metadata'
         }
         $out = Join-Path $Toolchain $asset.name
-        Write-Info "Downloading $($asset.name)…"
+        Write-Info "Downloading $($asset.name)"
         Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $out
-        Write-Info "Extracting Git…"
+        Write-Info "Extracting Git"
         Expand-Archive -Path $out -DestinationPath $gitDir -Force
     }
     # MinGit layout: prefer cmd and mingw64\bin
@@ -65,21 +65,34 @@ function Ensure-GitPortable {
 }
 
 function Ensure-DotNet {
-    if (Get-Command dotnet -ErrorAction SilentlyContinue) {
-        Write-Info "dotnet present: $(dotnet --version)"
-        return
-    }
     $dnDir = Join-Path $Toolchain 'dotnet'
     New-Item -Force -ItemType Directory -Path $dnDir | Out-Null
     $installer = Join-Path $Toolchain 'dotnet-install.ps1'
     if (-not (Test-Path $installer)) {
-        Write-Info "Downloading dotnet installer…"
+        Write-Info "Downloading dotnet installer..."
         Invoke-WebRequest -Uri 'https://dot.net/v1/dotnet-install.ps1' -OutFile $installer
     }
-    Write-Info "Installing .NET SDK (LTS) into toolchain…"
-    & powershell -NoProfile -ExecutionPolicy Bypass -File $installer -InstallDir $dnDir -Channel LTS | Write-Verbose
+    Write-Info "Installing .NET SDK (8.0 LTS) into toolchain..."
+    $dotnetExe = Join-Path $dnDir 'dotnet.exe'
+    $installed = $false
+    foreach ($channel in @('8.0','LTS')) {
+        try {
+            & powershell -NoProfile -ExecutionPolicy Bypass -File $installer -InstallDir $dnDir -Channel $channel -Quality 'ga' | Out-Null
+            $installed = Test-Path $dotnetExe
+            if ($installed) { break }
+        } catch {}
+    }
+    if (-not $installed) { throw 'Failed to install .NET SDK' }
     Add-ToPath $dnDir
-    Write-Info "dotnet ready: $(dotnet --version)"
+    $ver = & $dotnetExe --version
+    $sdks = & $dotnetExe --list-sdks
+    if (-not $sdks -or [string]::IsNullOrWhiteSpace(([string]::Join('', $sdks)).Trim())) {
+        throw 'dotnet SDK not detected after install (empty --list-sdks). Delete .toolchain and rerun ./bootstrap.ps1.'
+    }
+    if (-not ($sdks | Where-Object { $_ -match '^8\.0\.' })) {
+        throw 'dotnet 8.0 SDK not found; ensure 8.0 LTS installed to .toolchain'
+    }
+    Write-Info "dotnet ready: $ver (SDKs: $(($sdks | Select-Object -First 1)))"
 }
 
 function Ensure-MinGW {
@@ -90,16 +103,16 @@ function Ensure-MinGW {
     $arch = Get-Arch
     $winlibsDir = Join-Path $Toolchain 'winlibs'
     New-Item -Force -ItemType Directory -Path $winlibsDir | Out-Null
-    Write-Info "Fetching WinLibs release metadata…"
+    Write-Info "Fetching WinLibs release metadata"
     $rel = Invoke-RestMethod -Uri 'https://api.github.com/repos/brechtsanders/winlibs_mingw/releases/latest'
     $assets = @($rel.assets)
     $pattern = if ($arch -eq 'x64') { 'x86_64' } else { 'arm64|aarch64' }
     $asset = $assets | Where-Object { $_.name -match $pattern -and $_.name -match '\.zip$' } | Select-Object -First 1
     if (-not $asset) { throw "No suitable WinLibs .zip asset found for arch $arch" }
     $zip = Join-Path $winlibsDir $asset.name
-    Write-Info "Downloading $($asset.name)…"
+    Write-Info "Downloading $($asset.name)"
     Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $zip
-    Write-Info "Extracting WinLibs…"
+    Write-Info "Extracting WinLibs"
     Expand-Archive -Path $zip -DestinationPath $winlibsDir -Force
     # Find the extracted bin folder
     $bin = Get-ChildItem -Path $winlibsDir -Directory | ForEach-Object {
@@ -134,3 +147,4 @@ if ($mgBin) {
 Save-EnvScript -Content ([string]::Join("`n", $envContent))
 
 Write-Info "Bootstrap complete."
+

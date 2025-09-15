@@ -1,50 +1,58 @@
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace wh;
 
 public partial class MainWindow : Window
 {
-    public MainWindow()
+    private readonly Args _args;
+    private readonly ILog _log;
+
+    public MainWindow(Args args, ILog log)
     {
+        _args = args;
+        _log = log;
         InitializeComponent();
-        TryShowNativeHello();
+        Loaded += async (_, __) => await StartTranscriptionAsync();
     }
 
-    [DllImport("wh.dll", CharSet = CharSet.Unicode, ExactSpelling = false, SetLastError = true)]
-    private static extern IntPtr wh_hello();
-
-    private void TryShowNativeHello()
+    private async Task StartTranscriptionAsync()
     {
+        // Determine WAV path
+        var wav = _args.E2eWavPath;
+        if (string.IsNullOrWhiteSpace(wav))
+        {
+            // Default to sample path in repo when present (developer convenience)
+            var repoWav = Path.Combine(AppContext.BaseDirectory, "assets", "audio", "hello.wav");
+            if (File.Exists(repoWav)) wav = repoWav;
+        }
+
+        if (string.IsNullOrWhiteSpace(wav) || !File.Exists(wav))
+        {
+            TranscriptText.Text = "No WAV provided (--e2e-wav) and default missing.";
+            _log.Warn("transcribe.no_wav");
+            return;
+        }
+
         try
         {
-            // Attempt to call native stub if available (extracted in single-file publish).
-            var ptr = wh_hello();
-            if (ptr != IntPtr.Zero)
-            {
-                string msg = Marshal.PtrToStringUni(ptr) ?? string.Empty;
-                NativeHello.Text = $"Native says: {msg}";
-            }
-            else
-            {
-                NativeHello.Text = "Native stub not available (null pointer).";
-            }
-        }
-        catch (DllNotFoundException)
-        {
-            NativeHello.Text = "Native stub (wh.dll) not found — OK for M1.";
+            _log.Info("startup", ("wav", wav));
+            await ModelManager.EnsureModelAsync(_log);
+            var model = ModelManager.GetModelPath();
+            _log.Info("native.init", ("model", model));
+            Native.Init(model);
+            _log.Info("transcribe.start", ("path", wav));
+            var text = await Task.Run(() => Native.TranscribeWav(wav));
+            _log.Info("transcribe.done", ("chars", text.Length));
+            TranscriptText.Text = text;
         }
         catch (Exception ex)
         {
-            NativeHello.Text = $"Native call failed: {ex.Message}";
+            _log.Error("transcribe.error", ("error", ex.Message));
+            TranscriptText.Text = "Error: " + ex.Message;
         }
-    }
-
-    private void OnRecordClick(object sender, RoutedEventArgs e)
-    {
-        MessageBox.Show("Record pressed — wiring arrives in M2.", "wh");
     }
 }
 

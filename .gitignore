@@ -5,6 +5,7 @@
 bin/
 obj/
 out/
+dist/
 publish/
 native/build/
 
@@ -30,4 +31,3 @@ packages/
 # Misc
 Thumbs.db
 Desktop.ini
-

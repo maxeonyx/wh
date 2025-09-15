@@ -1,34 +1,34 @@
-# AGENTS.md — AI/Automation Entry
+﻿# AGENTS.md --- AI/Automation Entry
 
 Read and adhere to `docs/VISION.md` first. Treat it as the source of truth. Use `docs/GUIDANCE.md` for evolving implementation notes.
 
 Primary goals
 
-- Build a single‑file Windows HUD using Whisper for local ASR.
+- Build a single-file Windows HUD using Whisper for local ASR.
 - Behave like Windows dictation (UX), but fully offline.
 
 Repo layout
 
 - `wh/`
-  - `ui/` — WPF app (Windows 11 styling, dark mode, blue Record button).
-  - `native/` — Native library stub (to be wired to Whisper later).
+  - `ui/` --- WPF app (Windows 11 styling, dark mode, blue Record button).
+  - `native/` --- Native library stub (to be wired to Whisper later).
   - `docs/`
     - `VISION.md`
     - `GUIDANCE.md`
   - scripts.
-  - `README.md` - Docs entrypoint for users & developers.
+  - `README.md` - Docs entrypoint for users and developers.
   - `AGENTS.md` - Docs entrypoint for AI assistants.
 
 Scripts
 
-- `bootstrap.ps1` — Ensure tools. Installs to `.toolchain` if missing (PortableGit, .NET SDK, MinGW when needed). Deleting `.toolchain` uninstalls.
-- `build.ps1` — Build native first, then UI, produce single‑file `.exe` per RID.
-- `run.ps1` — Launch the built app for the current RID.
-- `test.ps1` — Minimal CI test: verifies build outputs exist. M2 will add E2E.
+- `bootstrap.ps1` --- Ensure tools. Installs to `.toolchain` if missing (PortableGit, .NET SDK, MinGW when needed). Deleting `.toolchain` uninstalls.
+- `build.ps1` --- Build native first, then UI, produce single-file `.exe` per RID.
+- `run.ps1` --- Launch the built app for the current RID.
+- `test.ps1` --- CI E2E test: builds, runs HUD, asserts transcript.
 
 CI
 
-- GitHub Actions matrix: x64/arm64 × MSVC/MinGW. Runs `bootstrap`, `build`, `test`.
+- GitHub Actions matrix: x64/arm64 -- MSVC/MinGW. Runs `bootstrap`, `build`, `test`.
 
 Usage (typical)
 
@@ -38,6 +38,13 @@ Usage (typical)
 
 Notes for Agents
 
-- Keep changes minimal and focused. Prefer *replacing* code & docs rather than *appending*. Keep all documentation up-to-date before completing a task.
-- When writing human-facing text (Readme, UI, error messages), prefer natural language, explanations, and smooth paragraphs over concise dense wording.
+- Keep changes minimal and focused. Prefer replacing code and docs rather than appending. Keep documentation up to date.
+- When writing human-facing text (Readme, UI, error messages), prefer natural language and smooth paragraphs over dense wording.
 - Prefer PowerShell only for scripts. Avoid global installs; use `.toolchain`.
+- Do not use non-ascii chars in messages or source code. Remove any that you find.
+
+Precision mindset
+
+- Treat the build like a well designed machine with tight tolerances: when inputs are correct, the process is minimal and perfect; when something is off, detect it early and stop with a clear, actionable error. Avoid “best-effort” or silent fallbacks in critical paths.
+
+
