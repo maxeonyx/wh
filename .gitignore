@@ -1,0 +1,33 @@
+# Logs
+*.log
+
+# Build outputs
+bin/
+obj/
+out/
+publish/
+native/build/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code
+.vscode/
+
+# Toolchain cache
+.toolchain/
+
+# NuGet
+*.nupkg
+packages/
+*.snupkg
+
+# Misc
+Thumbs.db
+Desktop.ini
+

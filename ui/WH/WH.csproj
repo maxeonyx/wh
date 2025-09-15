@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <OutputType>WinExe</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>WH</AssemblyName>
+    <RootNamespace>WH</RootNamespace>
+    <!-- Single-file publish. RID passed via build script. -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <!-- Include native DLL for extraction at runtime when present -->
+  <ItemGroup>
+    <NativeLibrary Include="..\..\native\build\wh.dll" Condition="Exists('..\\..\\native\\build\\wh.dll')" />
+  </ItemGroup>
+</Project>
