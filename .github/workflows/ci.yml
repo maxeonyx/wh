@@ -22,11 +22,21 @@ jobs:
         shell: pwsh
         run: ./bootstrap.ps1
 
+      - name: Derive model cache key
+        id: modelkey
+        shell: pwsh
+        run: |
+          $content = Get-Content -Raw ui/wh/ModelManager.cs
+          $m = [regex]::Match($content, 'DefaultModelFileName\s*=>\s*"([^"]+)"')
+          if (-not $m.Success) { throw 'Could not parse DefaultModelFileName from ModelManager.cs' }
+          $name = $m.Groups[1].Value
+          echo "model_name=$name" >> $env:GITHUB_OUTPUT
+
       - name: Restore model cache
         uses: actions/cache@v4
         with:
           path: ${{ env.WH_MODELS_DIR }}
-          key: wh-models-ggml-tiny-en-v1
+          key: wh-models-${{ steps.modelkey.outputs.model_name }}
 
       - name: Build
         shell: pwsh
@@ -35,4 +45,3 @@ jobs:
       - name: E2E UI test
         shell: pwsh
         run: ./test.ps1 -TimeoutSeconds 120
-

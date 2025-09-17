@@ -8,6 +8,11 @@ out/
 dist/
 publish/
 native/build/
+*.o
+*.obj
+*.a
+*.dll
+*.pdb
 
 # Visual Studio / Rider
 .vs/

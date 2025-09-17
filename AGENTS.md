@@ -47,4 +47,6 @@ Precision mindset
 
 - Treat the build like a well designed machine with tight tolerances: when inputs are correct, the process is minimal and perfect; when something is off, detect it early and stop with a clear, actionable error. Avoid “best-effort” or silent fallbacks in critical paths.
 
+## Getting set up
 
+Immediately run ./bootstrap.ps1 so that tools are available including Git - which is already configured, just not on PATH by default.

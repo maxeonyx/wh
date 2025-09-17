@@ -17,8 +17,11 @@
 
   <!-- Include native DLL for extraction at runtime when present -->
   <ItemGroup>
-    <Content Include="..\..\native\build\wh.dll" Condition="Exists('..\..\native\build\wh.dll')">
-      <Link>runtimes\$(RuntimeIdentifier)\native\wh.dll</Link>
+    <Content Include="..\..
+ative\build\wh.dll" Condition="Exists('..\..
+ative\build\wh.dll')">
+      <Link>runtimes\$(RuntimeIdentifier)
+ative\wh.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <ExcludeFromSingleFile>false</ExcludeFromSingleFile>
     </Content>
@@ -26,4 +29,10 @@
 
   <!-- Optional: packages for future managed transcription (kept minimal for now) -->
   <!-- Add Whisper.NET packages here if we decide to switch managed side to Whisper.NET -->
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
 </Project>
+
+
+

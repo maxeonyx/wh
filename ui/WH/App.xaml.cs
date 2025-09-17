@@ -44,19 +44,8 @@ public partial class App : System.Windows.Application
                 }
                 if (string.Equals(headless, "transcribe", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Find WAV as MainWindow would
-                    string? wav = null;
-                    var dir = AppContext.BaseDirectory;
-                    for (int i = 0; i < 4 && string.IsNullOrEmpty(wav); i++)
-                    {
-                        var candidate = System.IO.Path.GetFullPath(System.IO.Path.Combine(dir, "assets", "audio", "hello.wav"));
-                        if (System.IO.File.Exists(candidate)) { wav = candidate; break; }
-                        var parent = System.IO.Directory.GetParent(dir)?.FullName;
-                        if (string.IsNullOrEmpty(parent)) break;
-                        dir = parent;
-                    }
-                    if (string.IsNullOrWhiteSpace(wav) || !System.IO.File.Exists(wav))
-                        throw new InvalidOperationException("No WAV found at assets/audio/hello.wav.");
+                    // Find WAV via shared helper
+                    var wav = WavFinder.FindHelloWavOrThrow(AppContext.BaseDirectory);
 
                     // Do not download/verify here; tests ensure the model is cached.
                     var model = ModelManager.GetModelPath();
@@ -83,6 +72,15 @@ public partial class App : System.Windows.Application
                 return;
             }
         }
+
+        // Capture UI-thread faults early with actionable logs
+        this.DispatcherUnhandledException += (s, exArgs) =>
+        {
+            try { logger.Error("ui.dispatcher_unhandled", ("error", exArgs.Exception.Message)); }
+            catch { }
+            // Fail fast per precision mindset
+            try { Current.Shutdown(3); } catch { }
+        };
 
         var win = new MainWindow(logger);
         win.Show();

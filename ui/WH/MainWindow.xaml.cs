@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Input;
 
 namespace wh;
 
@@ -18,7 +19,11 @@ public partial class MainWindow : Window
         _injector = SelectInjector();
         InitializeComponent();
         SourceInitialized += (_, __) => ApplyNoActivateStyle();
-        Loaded += async (_, __) => await StartTranscriptionAsync();
+        Loaded += async (_, __) =>
+        {
+            CenterOnCursorDisplay();
+            await StartTranscriptionAsync();
+        };
     }
 
     private static ITextInjector SelectInjector()
@@ -30,6 +35,31 @@ public partial class MainWindow : Window
                 return new ClipboardPasteInjector();
         }
         return new SendInputTextInjector();
+    }
+
+    private void Header_MouseDown(object? sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton == MouseButton.Left)
+        {
+            try { DragMove(); } catch { }
+        }
+    }
+
+    private void Close_Click(object? sender, RoutedEventArgs e) => System.Windows.Application.Current.Shutdown(0);
+
+    private void CenterOnCursorDisplay()
+    {
+        try
+        {
+            var p = System.Windows.Forms.Control.MousePosition;
+            var screen = System.Windows.Forms.Screen.FromPoint(new System.Drawing.Point(p.X, p.Y));
+            var work = screen.WorkingArea;
+            var width = this.Width;
+            var height = this.Height;
+            this.Left = work.Left + (work.Width - width) / 2.0;
+            this.Top = work.Top + (work.Height - height) / 2.0;
+        }
+        catch { }
     }
 
     private void ApplyNoActivateStyle()
@@ -74,18 +104,7 @@ public partial class MainWindow : Window
     {
         try
         {
-            // Determine WAV path: look for assets/audio/hello.wav near app; walk up a few directories
-            string? wav = null;
-            var dir = AppContext.BaseDirectory;
-            for (int i = 0; i < 4 && string.IsNullOrEmpty(wav); i++)
-            {
-                var candidate = Path.GetFullPath(Path.Combine(dir, "assets", "audio", "hello.wav"));
-                if (File.Exists(candidate)) { wav = candidate; break; }
-                var parent = Directory.GetParent(dir)?.FullName;
-                if (string.IsNullOrEmpty(parent)) break;
-                dir = parent;
-            }
-
+            var wav = WavFinder.FindHelloWav(AppContext.BaseDirectory);
             if (string.IsNullOrWhiteSpace(wav) || !File.Exists(wav))
             {
                 TranscriptText.Text = "No WAV found at assets/audio/hello.wav.";
