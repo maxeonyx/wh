@@ -5,13 +5,13 @@ namespace wh;
 
 internal static class Native
 {
-    [DllImport("wh_native.dll", CharSet = CharSet.Unicode, ExactSpelling = false, SetLastError = true)]
+    [DllImport("wh.dll", CharSet = CharSet.Unicode, ExactSpelling = false, SetLastError = true)]
     private static extern int wh_init([MarshalAs(UnmanagedType.LPWStr)] string model_path);
 
-    [DllImport("wh_native.dll", CharSet = CharSet.Unicode, ExactSpelling = false, SetLastError = true)]
+    [DllImport("wh.dll", CharSet = CharSet.Unicode, ExactSpelling = false, SetLastError = true)]
     private static extern int wh_transcribe_wav([MarshalAs(UnmanagedType.LPWStr)] string wav_path, out IntPtr out_utf16);
 
-    [DllImport("wh_native.dll", CharSet = CharSet.Unicode, ExactSpelling = false, SetLastError = true)]
+    [DllImport("wh.dll", CharSet = CharSet.Unicode, ExactSpelling = false, SetLastError = true)]
     private static extern void wh_free(IntPtr ptr);
 
     public static void Init(string modelPath)

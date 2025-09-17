@@ -10,7 +10,6 @@ public partial class App : System.Windows.Application
     {
         base.OnStartup(e);
 
-        var args = Args.Parse(e.Args);
         var logsDir = ModelManager.GetLogsRoot();
         var logPath = Path.Combine(logsDir, "wh.log");
         var logger = new FileLogger(logPath);
@@ -22,7 +21,10 @@ public partial class App : System.Windows.Application
             ("bundle_extract", Environment.GetEnvironmentVariable("DOTNET_BUNDLE_EXTRACT_BASE_DIR") ?? string.Empty)
         );
 
-        var win = new MainWindow(args, logger);
+        // Ensure native DLL resolver is configured before any P/Invoke
+        NativeBootstrap.Configure();
+
+        var win = new MainWindow(logger);
         win.Show();
     }
 }

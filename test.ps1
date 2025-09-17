@@ -19,35 +19,17 @@ if (-not (Test-Path $wav)) { throw "Missing test asset: $wav" }
 $rid = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'win-arm64' } else { 'win-x64' }
 $runtimeDir = Join-Path $RepoRoot "dist/$rid/runtime"
 $extractDir = Join-Path $RepoRoot "dist/$rid/extract"
+$modelsDir = Join-Path $RepoRoot "dist/$rid/test-models"
 New-Item -ItemType Directory -Force -Path $runtimeDir,$extractDir | Out-Null
 $env:WH_RUNTIME_DIR = $runtimeDir
+$env:WH_MODELS_DIR = $modelsDir
 $env:DOTNET_BUNDLE_EXTRACT_BASE_DIR = $extractDir
 $env:DOTNET_BUNDLE_EXTRACT = '1'
 
-# Seed a tiny dummy model in the same place the app will read it from
-$modelsDir = if (-not [string]::IsNullOrWhiteSpace($env:WH_MODELS_DIR)) {
-  $env:WH_MODELS_DIR
-} elseif (-not [string]::IsNullOrWhiteSpace($env:WH_RUNTIME_DIR)) {
-  Join-Path $env:WH_RUNTIME_DIR 'models'
-} else {
-  Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'wh\models'
-}
+# No seeding: allow first-run model download & verification
 
-$modelName = 'ggml-tiny.en.bin'
-$modelPath = Join-Path $modelsDir $modelName
-$manifestPath = Join-Path $modelsDir ($modelName + '.manifest.json')
-if (-not (Test-Path $modelPath)) {
-  New-Item -ItemType Directory -Force -Path $modelsDir | Out-Null
-  # Write small dummy model
-  [IO.File]::WriteAllBytes($modelPath, [byte[]](1..64))
-  # Compute sha256
-  $sha256 = Get-FileHash -Algorithm SHA256 -Path $modelPath | Select-Object -ExpandProperty Hash
-  $manifest = @{ FileName = $modelName; Sha256 = $sha256.ToLower(); Size = (Get-Item $modelPath).Length } | ConvertTo-Json
-  Set-Content -Path $manifestPath -Value $manifest -Encoding UTF8
-}
-
-Write-Host "Launching E2E: $exe --e2e-wav $wav" -ForegroundColor Cyan
-$proc = Start-Process -FilePath $exe -ArgumentList "--e2e-wav `"$wav`"" -PassThru
+Write-Host "Launching E2E: $exe" -ForegroundColor Cyan
+$proc = Start-Process -FilePath $exe -PassThru
 
 try {
     # Wait for window
@@ -77,7 +59,7 @@ try {
         if ((Get-Date) -gt $deadline) { throw "Timed out waiting for transcript" }
     } while (-not $found -or [string]::IsNullOrWhiteSpace($name))
 
-    $expected = 'hello'
+    $expected = 'Hello, this is Spiderman. This is Spiderman.'
     if ($name -ne $expected) {
         throw "Expected transcript '$expected' but saw '$name'"
     }

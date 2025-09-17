@@ -7,12 +7,10 @@ namespace wh;
 
 public partial class MainWindow : Window
 {
-    private readonly Args _args;
     private readonly ILog _log;
 
-    public MainWindow(Args args, ILog log)
+    public MainWindow(ILog log)
     {
-        _args = args;
         _log = log;
         InitializeComponent();
         Loaded += async (_, __) => await StartTranscriptionAsync();
@@ -20,18 +18,21 @@ public partial class MainWindow : Window
 
     private async Task StartTranscriptionAsync()
     {
-        // Determine WAV path
-        var wav = _args.E2eWavPath;
-        if (string.IsNullOrWhiteSpace(wav))
+        // Determine WAV path: look for assets/audio/hello.wav near app; walk up a few directories
+        string? wav = null;
+        var dir = AppContext.BaseDirectory;
+        for (int i = 0; i < 4 && string.IsNullOrEmpty(wav); i++)
         {
-            // Default to sample path in repo when present (developer convenience)
-            var repoWav = Path.Combine(AppContext.BaseDirectory, "assets", "audio", "hello.wav");
-            if (File.Exists(repoWav)) wav = repoWav;
+            var candidate = Path.GetFullPath(Path.Combine(dir, "assets", "audio", "hello.wav"));
+            if (File.Exists(candidate)) { wav = candidate; break; }
+            var parent = Directory.GetParent(dir)?.FullName;
+            if (string.IsNullOrEmpty(parent)) break;
+            dir = parent;
         }
 
         if (string.IsNullOrWhiteSpace(wav) || !File.Exists(wav))
         {
-            TranscriptText.Text = "No WAV provided (--e2e-wav) and default missing.";
+            TranscriptText.Text = "No WAV found at assets/audio/hello.wav.";
             _log.Warn("transcribe.no_wav");
             return;
         }
@@ -55,4 +56,3 @@ public partial class MainWindow : Window
         }
     }
 }
-

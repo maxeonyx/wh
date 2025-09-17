@@ -38,24 +38,60 @@ $RID = if ($Arch -eq 'arm64') { 'win-arm64' } else { 'win-x64' }
 Write-Info "Compiler=$Compiler Arch=$Arch RID=$RID Config=$Configuration"
 
 # Build native DLL
-$nativeSrc = Join-Path $RepoRoot 'native/src/wh.cpp'
 $nativeOutDir = Join-Path $RepoRoot 'native/build'
 New-Item -ItemType Directory -Force -Path $nativeOutDir | Out-Null
-$nativeDll = Join-Path $nativeOutDir 'wh_native.dll'
+
+# whisper.cpp vendored sources
+$whRoot = Join-Path $RepoRoot 'native/whisper.cpp'
+$whInc = $whRoot
+$whC = @(
+  (Join-Path $whRoot 'ggml.c'),
+  (Join-Path $whRoot 'ggml-alloc.c'),
+  (Join-Path $whRoot 'ggml-backend.c'),
+  (Join-Path $whRoot 'ggml-quants.c')
+)
+$whCpp = @(
+  (Join-Path $whRoot 'whisper.cpp'),
+  (Join-Path $RepoRoot 'native/src/wh.cpp')
+)
+$nativeDll = Join-Path $nativeOutDir 'wh.dll'
 
 if ($Compiler -eq 'mingw') {
-    $gpp = Get-Command g++ -ErrorAction Stop | Select-Object -ExpandProperty Source
+    $gcc = (Get-Command gcc -ErrorAction Stop).Source
+    $gpp = (Get-Command g++ -ErrorAction Stop).Source
+    Write-Info "gcc: $gcc"
     Write-Info "g++: $gpp"
-    $exit = Invoke-Tool { & $gpp `
-        $nativeSrc `
-        '-shared' `
-        '-static-libgcc' `
-        '-static-libstdc++' `
-        '-o' $nativeDll `
-        '-DUNICODE' `
-        '-D_UNICODE' `
-        ('-Wl,--out-implib,' + (Join-Path $nativeOutDir 'libwh_native.a')) }
-    if ($exit -ne 0) { throw "Native build failed (g++ exit $exit). See errors above." }
+    $objs = @()
+    foreach ($c in $whC) {
+        $obj = Join-Path $nativeOutDir ((Split-Path $c -Leaf) + '.o')
+        $objs += $obj
+        $exit = Invoke-Tool { & $gcc `
+            '-O2' '-DNDEBUG' '-DGGML_USE_K_QUANTS' '-D_CRT_SECURE_NO_WARNINGS' '-pthread' `
+            '-I' $whInc `
+            '-c' $c `
+            '-o' $obj }
+        if ($exit -ne 0) { throw "Native C compile failed for $c (gcc exit $exit)." }
+    }
+    foreach ($cpp in $whCpp) {
+        $obj = Join-Path $nativeOutDir ((Split-Path $cpp -Leaf) + '.o')
+        $objs += $obj
+        $exit = Invoke-Tool { & $gpp `
+            '-O2' '-DNDEBUG' '-DGGML_USE_K_QUANTS' '-D_CRT_SECURE_NO_WARNINGS' '-pthread' `
+            '-std=c++17' `
+            '-I' $whInc `
+            '-c' $cpp `
+            '-o' $obj }
+        if ($exit -ne 0) { throw "Native C++ compile failed for $cpp (g++ exit $exit)." }
+    }
+    $implib = Join-Path $nativeOutDir 'libwh.a'
+    $linkArgs = @()
+    $linkArgs += '-shared'
+    $linkArgs += $objs
+    $linkArgs += @('-static','-static-libgcc','-static-libstdc++','-pthread')
+    $linkArgs += @('-o', $nativeDll)
+    $linkArgs += @('-Wl,--out-implib,' + $implib)
+    $exit = Invoke-Tool { & $gpp @linkArgs }
+    if ($exit -ne 0) { throw "Native link failed (g++ exit $exit). See errors above." }
 } else {
     # MSVC: locate VsDevCmd and invoke cl in that environment
     $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -66,7 +102,8 @@ if ($Compiler -eq 'mingw') {
     if (-not (Test-Path $vsdev)) { throw "VsDevCmd.bat not found at $vsdev" }
     $archArg = if ($Arch -eq 'arm64') { 'arm64' } else { 'x64' }
     Write-Info "Using MSVC via $vsdev ($archArg)"
-    $cmd = '"' + $vsdev + '" -arch=' + $archArg + ' && cl /nologo /EHsc /LD "' + $nativeSrc + '" /Fe:"' + $nativeDll + '"'
+    $srcs = @($whC + $whCpp) -join ' '
+    $cmd = '"' + $vsdev + '" -arch=' + $archArg + ' && cl /nologo /O2 /DNDEBUG /DGGML_USE_K_QUANTS /D_CRT_SECURE_NO_WARNINGS /EHsc /LD /I "' + $whInc + '" ' + $srcs + ' /Fe:"' + $nativeDll + '"'
     cmd.exe /c $cmd | Write-Host
 }
 

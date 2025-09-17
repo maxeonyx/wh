@@ -17,7 +17,8 @@
 
   <!-- Include native DLL for extraction at runtime when present -->
   <ItemGroup>
-    <Content Include="..\..\native\build\wh_native.dll" Condition="Exists('..\..\native\build\wh_native.dll')">
+    <Content Include="..\..\native\build\wh.dll" Condition="Exists('..\..\native\build\wh.dll')">
+      <Link>runtimes\$(RuntimeIdentifier)\native\wh.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <ExcludeFromSingleFile>false</ExcludeFromSingleFile>
     </Content>

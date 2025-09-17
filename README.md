@@ -18,8 +18,8 @@ Tiny Windows HUD for fully local speech-to-text using Whisper, injecting transcr
 
 ## Test Mode (M2)
 
-- Launch: `dist/<RID>/wh.exe --e2e-wav assets/audio/hello.wav`
-- HUD shows "Transcribing..." then the final transcript.
+- Launch: `dist/<RID>/wh.exe`.
+- On startup, the app looks for `assets/audio/hello.wav` near the repo (walking up from the app folder) and transcribes it. The HUD shows "Transcribing..." then the final transcript.
 - First run downloads a small Whisper model to `%LOCALAPPDATA%\wh\models\` (override with `WH_MODELS_DIR`).
 
 
