@@ -36,9 +36,15 @@ Advisory, not prescriptive. Keep this file up to date as implementation details 
 ## Runtime Behavior
 
 - HUD placement: Center on the display containing the cursor at time of display.
+- HUD activation: Always on top and non-activating (WS_EX_NOACTIVATE). The HUD should never steal focus from the target app. Use `ShowActivated=false`, `Topmost=true`, and add the `WS_EX_NOACTIVATE` extended style at window creation.
 - Recording lifecycle: Auto-start recording with an audible chime; allow toggle off.
 - Tray: Keep a tray icon for quick reactivation; reset transcription buffer on minimize and on reopen.
-- Text injection: Send transcribed text to the currently focused control. Keep the injection behind an abstraction seam.
+- Text injection: Send transcribed text to the currently focused control via an `ITextInjector` seam.
+  - Interface: `Insert(string text)` and `ReplaceLast(int charCount, string text)`.
+  - Default strategy (M3): SendInput-based typing (`SendInputTextInjector`) using Unicode events.
+    - Pros: broadly compatible; no clipboard disruption; layout-independent.
+    - ReplaceLast: implemented by sending Backspace N times then typing replacement (scaffold for future milestones).
+  - Alternatives kept for future swapping: clipboard paste and UI Automation patterns. Clipboard is not used in tests or defaults.
 
 ## CI/CD Guidance
 
@@ -61,9 +67,9 @@ Advisory, not prescriptive. Keep this file up to date as implementation details 
 - Focus on user-observable outcomes and stability.
 - Keep fixtures minimal and deterministic.
 - UI automation should assert the displayed transcription and key HUD behaviors.
+- For deterministic focus, E2E uses a small WinForms harness `TextSink.exe` (built from `tools/TextSink/`). The test launches TextSink, focuses its textbox once, then launches the HUD and waits for injection. The harness logs observed text to the console on change, compares against `WH_E2E_EXPECTED`, and exits with `0` on match. `WH_E2E_TIMEOUT` controls timeout seconds (default 10). The test enforces timeouts and always closes both apps.
 
 ## Maintenance
 
 - Keep this guidance in sync with reality as implementation evolves.
 - If pieces are no longer needed, delete them. If there are new patterns, rules or advice that would be helpful to future developers, add them.
-

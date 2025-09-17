@@ -7,7 +7,7 @@ Tiny Windows HUD for fully local speech-to-text using Whisper, injecting transcr
 
 > Status
 >
-> Milestone 2 focuses on a true single-file executable and an end-to-end startup transcription of a fixed WAV file with a black-box UI test. Single-file builds output to `dist/<RID>/wh.exe`. Native DLLs load via single-file extraction.
+> Milestone 3: on startup, the app transcribes a fixed WAV and injects the final transcript into the currently focused text area (e.g., Notepad), while keeping the HUD open. Packaging remains a single-file `wh.exe`; native DLLs load via single-file extraction.
 
 ## Quick Start
 
@@ -16,11 +16,18 @@ Tiny Windows HUD for fully local speech-to-text using Whisper, injecting transcr
 - Executable publishes to `dist/<RID>/wh.exe`.
 - Sample audio for tests lives at `assets/audio/hello.wav`.
 
-## Test Mode (M2)
+## Behavior (M3)
 
 - Launch: `dist/<RID>/wh.exe`.
-- On startup, the app looks for `assets/audio/hello.wav` near the repo (walking up from the app folder) and transcribes it. The HUD shows "Transcribing..." then the final transcript.
+- On startup, the app looks for `assets/audio/hello.wav` near the repo, transcribes it, and sends the resulting text to whatever control currently has focus (mirroring Windows dictation). The HUD status shows "Transcribing..." then "Ready" once done.
 - First run downloads a small Whisper model to `%LOCALAPPDATA%\wh\models\` (override with `WH_MODELS_DIR`).
+
+## Testing (E2E)
+
+- Run `./test.ps1` to build, publish, and drive an end-to-end UI test.
+- The test launches a small WinForms target app (`TextSink.exe`) with a textbox, sets focus to it, then launches `wh.exe` and asserts the injected transcript.
+- Timeouts are enforced and both apps are closed by the test, even on failure.
+- For stability in CI, the injector can be overridden to clipboard paste via `WH_INJECTOR=clipboard`.
 
 
 
