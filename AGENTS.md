@@ -49,4 +49,4 @@ Precision mindset
 
 ## Getting set up
 
-Immediately run ./bootstrap.ps1 so that tools are available including Git - which is already configured, just not on PATH by default.
+If `.toolchain\env.ps1` exists, dot-source it at the start of your session (for example: `. .toolchain\env.ps1`) so the local toolchain is on PATH. If the env script is missing, ask the user to run `./bootstrap.ps1` and wait for it to finish before proceeding.
