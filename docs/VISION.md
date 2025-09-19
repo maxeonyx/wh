@@ -22,6 +22,5 @@ A tiny Windows HUD ("wh - Whisper on Windows HUD") that enables local speech-to-
 
 ## Packaging and Distribution
 
-- Single-file download: Distribute as one `.exe` (no sidecar assets; include all UI files and all native libraries in the executable).
-- Model management: Download the Whisper model on first startup (the model is not bundled inside the downloaded `.exe`).
-
+- Single-file download: ship exactly one `.exe` artifact, no other files. The bundled image MUST contain every managed and native dependency (including `wh.dll`), and every asset. There is no installation but we can use a runtime directory.
+- Model management: Download the Whisper model from a third party on first startup (the model is not bundled inside the downloaded `.exe`).

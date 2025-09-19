@@ -26,12 +26,6 @@ public static class ModelManager
         return Path.Combine(GetRuntimeRoot(), "models");
     }
 
-    public static string GetLogsRoot()
-    {
-        var dir = Path.Combine(GetRuntimeRoot(), "logs");
-        Directory.CreateDirectory(dir);
-        return dir;
-    }
 
     public static string DefaultModelFileName => "ggml-tiny.en.bin"; // small and fast for CI
 
@@ -109,3 +103,4 @@ public static class ModelManager
         log.Info("model.download.complete", ("path", dest), ("sha256", sha256), ("size", size));
     }
 }
+

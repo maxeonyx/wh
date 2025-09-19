@@ -1,43 +1,144 @@
 <Window x:Class="wh.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="wh - Whisper HUD" Width="360" Height="234"
-        WindowStyle="None" ResizeMode="NoResize"
-        AllowsTransparency="True" Background="Transparent"
+        Title="wh - Whisper HUD"
+        Width="220"
+        Height="200"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        AllowsTransparency="True"
+        Background="Transparent"
         WindowStartupLocation="Manual"
-        ShowInTaskbar="False" ShowActivated="False" Topmost="True">
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        Topmost="True">
 
     <Window.Resources>
-        <SolidColorBrush x:Key="BodyBrush"   Color="#2B2C2C"/>
-        <SolidColorBrush x:Key="HeaderBrush" Color="#262626"/>
-        <SolidColorBrush x:Key="RingBrush"   Color="#2F2F2F"/>
-        <SolidColorBrush x:Key="GlyphBrush"  Color="#E6E6E6"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#546E74"/>
+        <SolidColorBrush x:Key="SurfaceBrush" Color="#E61E1F22"/>
+        <SolidColorBrush x:Key="HandleBrush" Color="#FF3C3E41"/>
+        <SolidColorBrush x:Key="ChromeHover" Color="#332B88FF"/>
+        <SolidColorBrush x:Key="ChromePressed" Color="#663575FF"/>
+        <SolidColorBrush x:Key="IconBrush" Color="#FFF2F2F2"/>
+        <SolidColorBrush x:Key="IconSecondaryBrush" Color="#CCFFFFFF"/>
 
-        <Style x:Key="IconButton" TargetType="Button">
-            <Setter Property="Width" Value="36"/>
-            <Setter Property="Height" Value="36"/>
-            <Setter Property="Padding" Value="8"/>
-            <Setter Property="Background" Value="{StaticResource BodyBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource RingBrush}"/>
-            <Setter Property="BorderThickness" Value="2"/>
+        <Style x:Key="CaptionButton" TargetType="Button">
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource IconBrush}"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border CornerRadius="18"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
+                        <Border x:Name="Root" Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="BorderBrush" Value="#5A5A5A"/>
+                                <Setter TargetName="Root" Property="Background" Value="{StaticResource ChromeHover}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#232323"/>
+                                <Setter TargetName="Root" Property="Background" Value="{StaticResource ChromePressed}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="GlyphButton" TargetType="Button">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource IconSecondaryBrush}"/>
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Root"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="16"
+                                Padding="0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="#33232527"/>
+                                <Setter Property="Foreground" Value="{StaticResource IconBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="#55293236"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="MicToggleStyle" TargetType="ToggleButton">
+            <Setter Property="Width" Value="72"/>
+            <Setter Property="Height" Value="72"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource IconSecondaryBrush}"/>
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Grid>
+                            <Ellipse x:Name="MicGlow" Width="72" Height="72">
+                                <Ellipse.Fill>
+                                    <SolidColorBrush Color="#002563EB"/>
+                                </Ellipse.Fill>
+                            </Ellipse>
+                            <Ellipse x:Name="MicSurface" StrokeThickness="2">
+                                <Ellipse.Fill>
+                                    <SolidColorBrush Color="#FF2F3133"/>
+                                </Ellipse.Fill>
+                                <Ellipse.Stroke>
+                                    <SolidColorBrush Color="#663C4044"/>
+                                </Ellipse.Stroke>
+                            </Ellipse>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="MicSurface" Property="Shape.Stroke" Value="#88FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Foreground" Value="#FFFFFFFF"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard x:Name="MicOn">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="MicSurface"
+                                                            Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
+                                                            To="#FF2563EB" Duration="0:0:0.2"/>
+                                            <ColorAnimation Storyboard.TargetName="MicGlow"
+                                                            Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
+                                                            To="#332563EB" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard x:Name="MicOff">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="MicSurface"
+                                                            Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
+                                                            To="#FF2F3133" Duration="0:0:0.2"/>
+                                            <ColorAnimation Storyboard.TargetName="MicGlow"
+                                                            Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
+                                                            To="#002563EB" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -46,73 +147,83 @@
         </Style>
     </Window.Resources>
 
-    <Border CornerRadius="10" Background="{StaticResource BodyBrush}">
+    <Border CornerRadius="12" Background="{StaticResource SurfaceBrush}">
         <Border.Effect>
             <DropShadowEffect Color="#000000" BlurRadius="16" ShadowDepth="4" Opacity="0.5"/>
         </Border.Effect>
 
-        <Grid Margin="6">
+        <Grid Margin="12">
             <Grid.RowDefinitions>
-                <RowDefinition Height="24"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Header -->
-            <Border Grid.Row="0" Background="{StaticResource HeaderBrush}"
-                    CornerRadius="8,8,0,0" MouseDown="Header_MouseDown">
-                <Grid>
-                    <Rectangle Width="40" Height="4" RadiusX="2" RadiusY="2"
-                               Fill="#3B3B3B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    <Button Width="20" Height="20" Padding="0" Background="Transparent"
-                            BorderThickness="0" Foreground="{StaticResource GlyphBrush}"
-                            HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,2,0"
-                            ToolTip="Close" Click="Close_Click">
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE10A;" FontSize="12"/>
-                    </Button>
-                </Grid>
-            </Border>
+            <!-- Header / drag handle -->
+            <Grid Grid.Row="0" Height="24" MouseDown="Header_MouseDown">
+                <Rectangle Width="44" Height="4" RadiusX="2" RadiusY="2"
+                           Fill="{StaticResource HandleBrush}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+                <Button Style="{StaticResource CaptionButton}"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Margin="0,0,0,0"
+                        ToolTip="Close"
+                        Click="Close_Click">
+                    <TextBlock Text="&#xE10A;" FontSize="12"/>
+                </Button>
+            </Grid>
 
-            <!-- Body -->
-            <Grid Grid.Row="1">
+            <!-- Mic button -->
+            <Grid Grid.Row="1" VerticalAlignment="Center">
+                <ToggleButton x:Name="MicButton"
+                              Style="{StaticResource MicToggleStyle}"
+                              IsChecked="True"
+                              Focusable="False">
+                    <TextBlock Text="&#xE720;"/>
+                </ToggleButton>
+
+                <Popup x:Name="ListeningPopup"
+                       PlacementTarget="{Binding ElementName=MicButton}"
+                       Placement="Top"
+                       IsOpen="{Binding IsChecked, ElementName=MicButton}"
+                       AllowsTransparency="True"
+                       PopupAnimation="Fade"
+                       StaysOpen="True"
+                       VerticalOffset="-8">
+                    <Border Background="#F21F1F22" CornerRadius="6" Padding="8,4">
+                        <TextBlock Text="Listening..." Foreground="{StaticResource IconBrush}" FontSize="12"/>
+                    </Border>
+                </Popup>
+            </Grid>
+
+            <!-- Footer actions -->
+            <Grid Grid.Row="2" Margin="0,16,0,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Left: Settings -->
-                <Button Grid.Column="0" Style="{StaticResource IconButton}" ToolTip="Settings"
-                        HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Viewbox Stretch="Uniform">
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;"
-                                   Foreground="{StaticResource GlyphBrush}"/>
-                    </Viewbox>
+                <Button Grid.Column="0"
+                        Style="{StaticResource GlyphButton}"
+                        ToolTip="Settings">
+                    <TextBlock Text="&#xE713;"/>
                 </Button>
 
-                <!-- Center: Microphone -->
-                <Grid Grid.Column="1" Width="96" Height="96" Margin="24,0"
-                      HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Ellipse Stroke="{StaticResource RingBrush}" StrokeThickness="4"
-                             Fill="{StaticResource BodyBrush}"/>
-                    <Viewbox>
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE720;"
-                                   Foreground="{StaticResource AccentBrush}"/>
-                    </Viewbox>
-                </Grid>
-
-                <!-- Right: Help -->
-                <Button Grid.Column="2" Style="{StaticResource IconButton}" ToolTip="Help"
-                        HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Viewbox Stretch="Uniform">
-                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE897;"
-                                   Foreground="{StaticResource GlyphBrush}"/>
-                    </Viewbox>
+                <Button Grid.Column="2"
+                        Style="{StaticResource GlyphButton}"
+                        ToolTip="Help">
+                    <TextBlock Text="&#xE897;"/>
                 </Button>
             </Grid>
 
             <!-- Hidden automation/status elements preserved for E2E -->
             <TextBlock x:Name="StatusText" Visibility="Collapsed"/>
-            <TextBlock x:Name="TranscriptText" Visibility="Collapsed" AutomationProperties.AutomationId="TranscriptText"/>
+            <TextBlock x:Name="TranscriptText"
+                       Visibility="Collapsed"
+                       AutomationProperties.AutomationId="TranscriptText"/>
         </Grid>
     </Border>
 </Window>

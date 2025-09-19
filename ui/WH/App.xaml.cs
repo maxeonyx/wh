@@ -12,13 +12,8 @@ public partial class App : System.Windows.Application
         base.OnStartup(e);
 
         TryAttachConsole();
-        var logsDir = ModelManager.GetLogsRoot();
-        var logPath = Path.Combine(logsDir, "wh.log");
-        ILog logger;
-        if (HasConsole())
-            logger = new CompositeLogger(new FileLogger(logPath), new ConsoleLogger());
-        else
-            logger = new FileLogger(logPath);
+        ILog logger = new ConsoleLogger();
+
         logger.Info("app.start",
             ("args", string.Join(" ", e.Args)),
             ("process", Environment.ProcessPath ?? string.Empty),
@@ -102,4 +97,5 @@ public partial class App : System.Windows.Application
         try { Console.CursorVisible = Console.CursorVisible; return true; } catch { return false; }
     }
 }
+
 

@@ -27,11 +27,12 @@ Advisory, not prescriptive. Keep this file up to date as implementation details 
 
 ## Packaging Pattern
 
-- Ship one `.exe`.
+- Ship one `.exe`. Publish with `dotnet publish -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true` so `wh.dll` and every other dependency ride inside the bundle and extract only to the runtime cache; never place anything beside the distributed executable.
 - First-run behavior:
   - Create or reuse a user-space directory (under `AppData\\Local\\wh`).
   - Download the Whisper model on first run.
   - Load the native DLL and model from this location thereafter.
+- For debugging, point `DOTNET_BUNDLE_EXTRACT_BASE_DIR` at a throwaway directory to inspect the extracted bundle contents. Delete anything created there after inspection; no extracted assets ship with the product.
 
 ## Runtime Behavior
 
